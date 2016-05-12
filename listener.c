@@ -1,6 +1,5 @@
-// Source:
-// http://beej.us/guide/bgipc/output/html/singlepage/bgipc.html#unixsockserv
-
+//Source 
+//http://beej.us/guide/bgipc/output/html/singlepage/bgipc.html#sockclient
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -15,54 +14,38 @@
 
 int main(void)
 {
-	int s, s2, len;
-	socklen_t t;
-	struct sockaddr_un local, remote;
+	int s, t, len;
+	struct sockaddr_un remote;
 	char str[100];
 	if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
 		perror("socket");
 		exit(1);
 	}
-	local.sun_family = AF_UNIX;
-	strcpy(local.sun_path, SOCK_PATH);
-	unlink(local.sun_path);
-	len = strlen(local.sun_path) + sizeof(local.sun_family);
-	if (bind(s, (struct sockaddr *)&local, len) == -1) {
-		perror("bind");
+	printf("Trying to connect...\n");
+	remote.sun_family = AF_UNIX;
+	strcpy(remote.sun_path, SOCK_PATH);
+	len = strlen(remote.sun_path) + sizeof(remote.sun_family);
+	if (connect(s, (struct sockaddr *)&remote, len) == -1) {
+		perror("connect");
 		exit(1);
 	}
-	if (listen(s, 5) == -1) {
-		perror("listen");
-		exit(1);
-	}
-	for(;;) {
-		int done, n;
-		printf("Waiting for a connection...\n");
-		t = sizeof(remote);
-		if ((s2 = accept(s, (struct sockaddr *)&remote, &t)) == -1) {
-			perror("accept");
+	printf("Connected.\n");
+	while(printf("> "), fgets(str, 100, stdin), !feof(stdin)) {
+		if (send(s, str, strlen(str), 0) == -1) {
+			perror("send");
 			exit(1);
 		}
-		printf("Connected.\n");
-		done = 0;
-		do {
-			n = recv(s2, str, 100, 0);
-			if (n <= 0) {
-				if (n < 0) perror("recv");
-					done = 1;
-			}
-			for (int x = 0; x < (int)strlen(str); x++ )
-			{
-				str[x] = toupper(str[x]);
-			}
-		if (!done) 
-			if (send(s2, str, n, 0) < 0) {
-				perror("send");
-				done = 1;
-			}
-		} while (!done);
-		close(s2);
+		if ((t=recv(s, str, 100, 0)) > 0) {
+			str[t] = '\0';
+			printf("%s", str);
+		} else {
+			if (t < 0) 
+				perror("recv");
+			else printf("Server closed connection\n");
+				exit(1);
+		}
 	}
+	close(s);
 	return 0;
 }
 
