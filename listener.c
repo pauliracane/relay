@@ -17,9 +17,14 @@ int main()
 		int filedesc = open("/tmp/testfile.txt", O_RDONLY);
 		if (filedesc < 0)
 		{
-			printf("Error opening testfile.txt.  Check to ensure file exists,"
-					" and then try again.\n");
-			printf("Note:  Dispatcher removes the file when it finishes.\n");
+			if ( input[0] )
+			{
+				printf("Dispatcher has closed.\n");
+			}
+			else
+			{
+				printf("Can't find file /tmp/testfile.txt\n");
+			}
 			close(filedesc);
 			return 1;
 		}
