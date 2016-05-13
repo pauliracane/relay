@@ -14,7 +14,7 @@ int main()
 	char input[MAX_SZ-1] = {'\0'};
 	for(;;)
 	{
-		int filedesc = open("testfile.txt", O_RDONLY);
+		int filedesc = open("/tmp/testfile.txt", O_RDONLY);
 		if (filedesc < 0)
 		{
 			printf("Error opening testfile.txt.  Check to ensure file exists,"
