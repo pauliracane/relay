@@ -8,7 +8,7 @@
 #include <sys/file.h> //Flock
 #include <fcntl.h>
 
-#define MAX_SZ 100
+#define MAX_SZ 256
 
 int main(void)
 {	
@@ -19,6 +19,7 @@ int main(void)
 		{
 			        break;
 		}
+		str[strlen(str)] = EOF;
 		int filedesc = open("./testfile.txt", O_WRONLY | O_CREAT | O_TRUNC);
 		if(filedesc < 0)
 		{

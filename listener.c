@@ -6,7 +6,7 @@
 #include <sys/file.h> //Flock
 
 
-#define MAX_SZ 100
+#define MAX_SZ 256
 
 int main()
 {
@@ -17,6 +17,10 @@ int main()
 		int filedesc = open("testfile.txt", O_RDONLY);
 		if (filedesc < 0)
 		{
+			printf("Error opening testfile.txt.  Check to ensure file exists.\
+					and then try again.\n");
+			printf("Note:  Dispatcher removes the file when it finishes.\n");
+			close(filedesc);
 			return 1;
 		}
 		flock(filedesc, LOCK_SH);
