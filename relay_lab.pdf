@@ -1,0 +1,57 @@
+
+Name: Paul Iracane
+Date:  13 May 2016
+Current Module: Operating Systems
+Project Name:  Relay
+
+	Project Goals:
+	The goal of the project was to make a local machine server that distributed messages to all listeners, also on the local machine. The trick to this was that both sides of this were meant to be able to be run from any directory on the machine.
+	
+Considerations:
+	Disregarding Directories
+	No command line Args
+	Different Users.
+	Listener should not echo output
+	EOT character (0x04 -- Ctrl + D)
+	Multiple Listeners
+	
+
+	Initial Design:
+		describe your program's structure and layout discussing the various modules (.c and corresponding .h files) that you implemented>  
+
+	Dispatcher makes a file stored in /tmp/, which is accessed by Listener.  Dispatcher then waits for input.  When input is fed to Dispatcher, it passes the input into the /tmp/ file.  As more input is passed to it, it wipes out what was previously in the file, and writes the new data. When EOT (Ctrl + D)is sent to it, it removes the file from /tmp/, and exits out.
+
+	Listener checks to see if the file from above is in /tmp/.  If it is, it then attempts to read it, and print the data from it to the screen. Closes and repeats.
+
+Data Flow:
+		Dispatcher Started -> Makes /tmp/testfile.txt
+				Waits for input.
+
+		Listener Started -> While loop
+				Reads from /tmp/testfile.txt
+		
+		Dispatcher Receives input -> Writes to /tmp/testfile.txt
+
+Communication Protocol: 
+	All I can think of for communication protocol that was used would be locking the file as appropriate for writing (Exclusive) or reading (shared). Shared lock was used because all potential things reading it needed to be able to access it, exclusive was becasue the data was chaging.
+	
+	Potential Pitfalls: 
+		Writing while reading;
+		Unable to read all of it
+		Inapropriate input
+		Sockets? Files? Shared Mem?
+	
+	
+Test Plan:  
+		User Test:
+			Run 2 Listeners, put in random text, ensure they check.
+			Overflow buffer
+		Automated Test: 
+			N/A
+		Expected Result:  
+			epected both users to return the input on their own screens.  When buffer was overflowed, expected it to flood file, and wipe out first portion with later portion.  Listeners should only print last segent of buffer
+
+Conclusion:
+	In project I went easy cheesy, and wrote it to use a file in the upper most directory I had permission to write in.  Future improvements would be to put it all in sockets, or maybe make it network oriented to allow it to send out messages across networks (AIM).
+
+
