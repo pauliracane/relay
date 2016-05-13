@@ -50,9 +50,5 @@ int main(void)
 	}
 	remove("/tmp/testfile.txt");
 	return 0;
-
-
-
-
 }
 
