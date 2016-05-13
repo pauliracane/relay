@@ -21,7 +21,7 @@ int main(void)
 		    printf("Broken.\n");
 			    return 1;
 	}
-	write(filedesc, "--Waiting for Input--", 22);
+	write(filedesc, "", 22);
 	close(filedesc);
 	
 	while (1)
@@ -48,7 +48,7 @@ int main(void)
 		flock(filedesc, LOCK_UN);
 		close(filedesc);
 	}
-	remove("./testfile.txt");
+	remove("/tmp/testfile.txt");
 	return 0;
 
 
