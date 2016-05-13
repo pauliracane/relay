@@ -13,16 +13,27 @@
 int main(void)
 {	
 	char str[MAX_SZ] = {'\0'};
-    while (1)
+
+	int filedesc = open("/tmp/testfile.txt", O_WRONLY | O_CREAT | O_TRUNC,
+						S_IRWXU | S_IRWXG | S_IRWXO);
+	if(filedesc < 0)
+	{
+		    printf("Broken.\n");
+			    return 1;
+	}
+	write(filedesc, "--Waiting for Input--", 22);
+	close(filedesc);
+	
+	while (1)
 	{
 		if ( (fgets(str, MAX_SZ-1 , stdin) ) == NULL || str[0]==0x04)
 		{
-			        break;
+			break;
 		}
-		int filedesc = open("./testfile.txt", O_WRONLY | O_CREAT | O_TRUNC);
+		int filedesc = open("/tmp/testfile.txt", O_WRONLY | O_CREAT | O_TRUNC);
 		if(filedesc < 0)
 		{
-			printf("Broken.");
+			printf("Broken.\n");
 			return 1;
 		}
 		flock(filedesc, LOCK_EX);
