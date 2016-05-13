@@ -1,68 +1,47 @@
-// Source:
-// http://beej.us/guide/bgipc/output/html/singlepage/bgipc.html#unixsockserv
-
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
+#include <unistd.h>
 #include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/file.h> //Flock
+#include <fcntl.h>
 
-#define SOCK_PATH ".echo_socket"
+#define MAX_SZ 100
 
 int main(void)
-{
-	int s, s2, len;
-	socklen_t t;
-	struct sockaddr_un local, remote;
-	char str[100];
-	if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-		perror("socket");
-		exit(1);
-	}
-	local.sun_family = AF_UNIX;
-	strcpy(local.sun_path, SOCK_PATH);
-	unlink(local.sun_path);
-	len = strlen(local.sun_path) + sizeof(local.sun_family);
-	if (bind(s, (struct sockaddr *)&local, len) == -1) {
-		perror("bind");
-		exit(1);
-	}
-	if (listen(s, 5) == -1) {
-		perror("listen");
-		exit(1);
-	}
-	for(;;) {
-		int done, n;
-		printf("Waiting for a connection...\n");
-		t = sizeof(remote);
-		if ((s2 = accept(s, (struct sockaddr *)&remote, &t)) == -1) {
-			perror("accept");
-			exit(1);
+{	
+	char str[MAX_SZ] = {'\0'};
+    while (1)
+	{
+		if ( (fgets(str, MAX_SZ-1 , stdin) ) == NULL || str[0]==0x04)
+		{
+			        break;
 		}
-		printf("Connected.\n");
-		done = 0;
-		do {
-			n = recv(s2, str, 100, 0);
-			if (n <= 0) {
-				if (n < 0) perror("recv");
-					done = 1;
-			}
-			for (int x = 0; x < (int)strlen(str); x++ )
-			{
-				str[x] = toupper(str[x]);
-			}
-		if (!done) 
-			if (send(s2, str, n, 0) < 0) {
-				perror("send");
-				done = 1;
-			}
-		} while (!done);
-		close(s2);
+		int filedesc = open("./testfile.txt", O_WRONLY | O_CREAT | O_TRUNC);
+		if(filedesc < 0)
+		{
+			printf("Broken.");
+			return 1;
+		}
+		flock(filedesc, LOCK_EX);
+		if(write(filedesc,str, strlen(str)) != (int) strlen(str))
+		{
+			write(filedesc,"There was an error writing to testfile.txt\n", 36);
+			// strictly not an error, it is allowable for fewer 
+			// characters than requested to be written.
+			return 1;
+		}
+
+		flock(filedesc, LOCK_UN);
+		close(filedesc);
 	}
+	remove("./testfile.txt");
 	return 0;
+
+
+
+
 }
 

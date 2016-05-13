@@ -1,51 +1,36 @@
-//Source 
-//http://beej.us/guide/bgipc/output/html/singlepage/bgipc.html#sockclient
 #include <stdio.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <ctype.h>
+#include <sys/file.h> //Flock
 
-#define SOCK_PATH ".echo_socket"
 
-int main(void)
+#define MAX_SZ 100
+
+int main()
 {
-	int s, t, len;
-	struct sockaddr_un remote;
-	char str[100];
-	if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-		perror("socket");
-		exit(1);
-	}
-	printf("Trying to connect...\n");
-	remote.sun_family = AF_UNIX;
-	strcpy(remote.sun_path, SOCK_PATH);
-	len = strlen(remote.sun_path) + sizeof(remote.sun_family);
-	if (connect(s, (struct sockaddr *)&remote, len) == -1) {
-		perror("connect");
-		exit(1);
-	}
-	printf("Connected.\n");
-	while(printf("> "), fgets(str, 100, stdin), !feof(stdin)) {
-		if (send(s, str, strlen(str), 0) == -1) {
-			perror("send");
-			exit(1);
+	char buff[MAX_SZ-1] = {'\0'};
+	char input[MAX_SZ-1] = {'\0'};
+	for(;;)
+	{
+		int filedesc = open("testfile.txt", O_RDONLY);
+		if (filedesc < 0)
+		{
+			return 1;
 		}
-		if ((t=recv(s, str, 100, 0)) > 0) {
-			str[t] = '\0';
-			printf("%s", str);
-		} else {
-			if (t < 0) 
-				perror("recv");
-			else printf("Server closed connection\n");
-				exit(1);
+		flock(filedesc, LOCK_SH);
+		if(read(filedesc,input,MAX_SZ))
+		{
+			if (strcmp(buff, input))
+			{
+				strncpy(buff, input, MAX_SZ-1);
+				printf("%s", buff);
+			}
 		}
+		flock(filedesc, LOCK_UN);
+		close(filedesc);
 	}
-	close(s);
 	return 0;
 }
 
