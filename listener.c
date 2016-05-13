@@ -17,13 +17,15 @@ int main()
 		int filedesc = open("testfile.txt", O_RDONLY);
 		if (filedesc < 0)
 		{
-			printf("Error opening testfile.txt.  Check to ensure file exists.\
-					and then try again.\n");
+			printf("Error opening testfile.txt.  Check to ensure file exists,"
+					" and then try again.\n");
 			printf("Note:  Dispatcher removes the file when it finishes.\n");
 			close(filedesc);
 			return 1;
 		}
 		flock(filedesc, LOCK_SH);
+		for (int x = 0; x < MAX_SZ-1; x++)
+			input[x] = '\0';
 		if(read(filedesc,input,MAX_SZ))
 		{
 			if (strcmp(buff, input))
